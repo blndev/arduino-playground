@@ -1,52 +1,106 @@
 /*
-  LEDBar 
-  
+  LEDBar
+
 */
 
-const int LEDBAR_1 = 2;
-const int LEDBAR_10 = LEDBAR_1 + 9;
 
-const int SWITCH = 12;
+#define ON HIGH
+#define OFF LOW
+#define mode int
+#define PRESSED LOW
+
+// OUTPUT
+
+//Array allows us to use ports which are not in the same order for the led bar
+const int LEDBAR[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+//sample for smaller led bar
+//const int LEDBAR[] = {2, 4, 6, 8, 10};
+const int LEDBAR_MAX = sizeof(LEDBAR) / sizeof(LEDBAR[0]) - 1; //automatic determine size of led bar
+
+// INPUT
+const int SWITCH_GREEN = 12;
+
+
+// Behavior
+const int WAVE_DELAY = 1000;
+bool direction_right = true;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600); // initialize the serial port, set the baud rate to 9600
   Serial.println("UNO is ready!");
-  pinMode(SWITCH, INPUT);
-  for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) pinMode(ledbar, OUTPUT);
+  pinMode(SWITCH_GREEN, INPUT);
+  for (int led = 0; led <= LEDBAR_MAX; led++) pinMode(LEDBAR[led], OUTPUT);
 }
 
-void setBar(int status)
+
+bool check_button_green() {
+  bool pressed = false;
+  if (digitalRead(SWITCH_GREEN) == PRESSED) {
+    delay(10); //handle button flickering
+    if (digitalRead(SWITCH_GREEN) == PRESSED) {
+
+      pressed = true;
+      setBar(OFF, 0);
+      while (digitalRead(SWITCH_GREEN) == PRESSED) {
+        blink(ON);
+        blink(OFF);
+      }
+      Serial.println("Button released");
+      // invert direction
+      direction_right = !direction_right;
+      //setBar(ON, 0);
+    }
+  }
+  return pressed;
+}
+
+
+void setBar(mode onoff, int pause)
 {
-  for (int led = LEDBAR_1; led <= LEDBAR_10; led++)
+  for (int led = 0; led <= LEDBAR_MAX; led++)
   {
-    digitalWrite(led, status);
-    delay(50);                         // wait for a second
+    digitalWrite(LEDBAR[led], onoff);
+    //if (check_button_green()) break;
+    delay(pause);
   }
 }
 
-// the loop function runs over and over again forever
-void loop() {
-  //for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) digitalWrite(ledbar, LOW);
-  setBar(HIGH);
-  if (digitalRead(SWITCH)==LOW){
-    delay(10); //handle flickering
-    Serial.println("Button pressed");
+void setBarReverse(mode onoff, int pause)
+{
+  for (int led = LEDBAR_MAX; led >= 0; led--)
+  {
+    digitalWrite(LEDBAR[led], onoff);
+    //if (check_button_green()) break;
+    delay(pause);
+  }
+}
 
-    for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) digitalWrite(ledbar, LOW);
-    while (digitalRead(SWITCH)==LOW){
-        digitalWrite(LEDBAR_1, LOW);
-        digitalWrite(LEDBAR_10, LOW);
-        delay(100);
-        digitalWrite(LEDBAR_1, HIGH);
-        digitalWrite(LEDBAR_10, HIGH);
-        delay(100);
-    }
-    Serial.println("Button released");
-    for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) digitalWrite(ledbar, HIGH);
-  }//else{
-  // wait for a second
-  //delay(900);                       // wait for a second
-  setBar(LOW);
-  //}
+
+void waveBarRight(mode onoff)
+{
+  //turn on/off leds with 50ms delay for 10 led and longer for less (keep timing)
+  setBar(onoff, WAVE_DELAY / LEDBAR_MAX + 1);
+}
+
+
+void waveBarLeft(mode onoff)
+{
+  //turn on/off leds with 50ms delay for 10 led and longer for less (keep timing)
+  setBarReverse(onoff, WAVE_DELAY / LEDBAR_MAX + 1);
+}
+
+void blink(mode onoff) {
+  digitalWrite(LEDBAR[0], onoff);
+  digitalWrite(LEDBAR[LEDBAR_MAX], onoff);
+  delay(100);
+}
+
+void loop() {
+  if (direction_right)waveBarRight(ON);
+  else waveBarLeft(ON);
+  check_button_green();
+  if (direction_right)waveBarRight(OFF);
+  else waveBarLeft(OFF);
+  Serial.print(".");
 }
