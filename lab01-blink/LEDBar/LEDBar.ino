@@ -1,29 +1,19 @@
 /*
-  Blink
-
-  Turns an LED on 3 times for 100 ms and then off for one second.
-
-  based on Example of Arduino IDE
-
-  modified 8 May 2014
-  by Scott Fitzgerald
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-  modified 8 Sep 2016
-  by Colby Newman
-
-  This example code is in the public domain.
-
-  http://www.arduino.cc/en/Tutorial/Blink
+  LEDBar 
+  
 */
 
 const int LEDBAR_1 = 2;
 const int LEDBAR_10 = LEDBAR_1 + 9;
 
+const int SWITCH = 12;
+
 // the setup function runs once when you press reset or power the board
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) pinMode(ledbar, HIGH);
+  Serial.begin(9600); // initialize the serial port, set the baud rate to 9600
+  Serial.println("UNO is ready!");
+  pinMode(SWITCH, INPUT);
+  for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) pinMode(ledbar, OUTPUT);
 }
 
 void setBar(int status)
@@ -39,7 +29,24 @@ void setBar(int status)
 void loop() {
   //for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) digitalWrite(ledbar, LOW);
   setBar(HIGH);
+  if (digitalRead(SWITCH)==LOW){
+    delay(10); //handle flickering
+    Serial.println("Button pressed");
+
+    for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) digitalWrite(ledbar, LOW);
+    while (digitalRead(SWITCH)==LOW){
+        digitalWrite(LEDBAR_1, LOW);
+        digitalWrite(LEDBAR_10, LOW);
+        delay(100);
+        digitalWrite(LEDBAR_1, HIGH);
+        digitalWrite(LEDBAR_10, HIGH);
+        delay(100);
+    }
+    Serial.println("Button released");
+    for (int ledbar = LEDBAR_1; ledbar <= LEDBAR_10; ledbar++) digitalWrite(ledbar, HIGH);
+  }//else{
   // wait for a second
   //delay(900);                       // wait for a second
   setBar(LOW);
+  //}
 }
