@@ -1,3 +1,6 @@
+//https://github.com/JChristensen/JC_Button
+#include <JC_Button.h>
+
 /*
   LEDBar
 
@@ -19,7 +22,7 @@ const int LEDBAR_MAX = sizeof(LEDBAR) / sizeof(LEDBAR[0]) - 1; //automatic deter
 
 // INPUT
 const int SWITCH_GREEN = 12;
-
+ToggleButton switch_green(SWITCH_GREEN);
 
 // Behavior
 const int WAVE_DELAY = 1000;
@@ -29,30 +32,10 @@ bool direction_right = true;
 void setup() {
   Serial.begin(9600); // initialize the serial port, set the baud rate to 9600
   Serial.println("UNO is ready!");
-  pinMode(SWITCH_GREEN, INPUT);
   for (int led = 0; led <= LEDBAR_MAX; led++) pinMode(LEDBAR[led], OUTPUT);
-}
-
-
-bool check_button_green() {
-  bool pressed = false;
-  if (digitalRead(SWITCH_GREEN) == PRESSED) {
-    delay(10); //handle button flickering
-    if (digitalRead(SWITCH_GREEN) == PRESSED) {
-
-      pressed = true;
-      setBar(OFF, 0);
-      while (digitalRead(SWITCH_GREEN) == PRESSED) {
-        blink(ON);
-        blink(OFF);
-      }
-      Serial.println("Button released");
-      // invert direction
-      direction_right = !direction_right;
-      //setBar(ON, 0);
-    }
-  }
-  return pressed;
+  switch_green.begin();
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, ON);
 }
 
 
@@ -61,7 +44,8 @@ void setBar(mode onoff, int pause)
   for (int led = 0; led <= LEDBAR_MAX; led++)
   {
     digitalWrite(LEDBAR[led], onoff);
-    //if (check_button_green()) break;
+    switch_green.read();
+    if (switch_green.changed()) return;
     delay(pause);
   }
 }
@@ -72,6 +56,9 @@ void setBarReverse(mode onoff, int pause)
   {
     digitalWrite(LEDBAR[led], onoff);
     //if (check_button_green()) break;
+    switch_green.read();
+    if (switch_green.changed()) return;
+
     delay(pause);
   }
 }
@@ -97,10 +84,19 @@ void blink(mode onoff) {
 }
 
 void loop() {
-  if (direction_right)waveBarRight(ON);
+  if (switch_green.changed()) {
+    Serial.println("changed");
+    digitalWrite(LED_BUILTIN, switch_green.toggleState());  
+  }
+  switch_green.read();
+  //delay(50);
+
+  
+  if (switch_green.toggleState())waveBarRight(ON);
   else waveBarLeft(ON);
-  check_button_green();
-  if (direction_right)waveBarRight(OFF);
+  if (switch_green.toggleState())waveBarRight(OFF);
   else waveBarLeft(OFF);
   Serial.print(".");
+  
+  //Serial.print(switch_green.read());
 }
