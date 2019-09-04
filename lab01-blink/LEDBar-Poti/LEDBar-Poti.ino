@@ -24,12 +24,14 @@ const int LEDBAR_MAX = sizeof(LEDBAR) / sizeof(LEDBAR[0]) - 1; //automatic deter
 const int SWITCH_GREEN = 12;
 ToggleButton switch_green(SWITCH_GREEN);
 
-const int PORT_POTI_SPEED = 1;
+const int POTI_SPEED = 1;
 
 // Behavior
-const int WAVE_DELAY = 1000;
+//const int WAVE_DELAY = 1000;
 bool direction_right = true;
 
+int adcValue = 0;
+#define WAVE_DELAY (1024-adcValue)
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600); // initialize the serial port, set the baud rate to 9600
@@ -40,6 +42,15 @@ void setup() {
   digitalWrite(LED_BUILTIN, ON);
 }
 
+void measure() {
+  adcValue = analogRead(A0); // Convert analog of A0 port to digital
+  float voltage = adcValue * (5.0 / 1023.0);// Calculate voltage according to digital
+  // Send the result to computer through serial
+  Serial.print("convertValue:");
+  Serial.println(adcValue);
+  Serial.print("Voltage:");
+  Serial.println(voltage);
+}
 
 void setBar(mode onoff, int pause)
 {
@@ -85,7 +96,9 @@ void blink(mode onoff) {
   delay(100);
 }
 
+
 void loop() {
+  measure();
   if (switch_green.changed()) {
     Serial.println("changed");
     digitalWrite(LED_BUILTIN, switch_green.toggleState());
