@@ -104,12 +104,6 @@ void loop() {
     digitalWrite(LED_BUILTIN, switch_green.toggleState());
   }
 
-  if (switch_green.isPressed()) {
-    for (int i = 0; i <= 5; i++) {
-      blink(ON);
-      blink(OFF);
-    }
-  }
   switch_green.read();
   //delay(50);
 
