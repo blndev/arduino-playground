@@ -1,0 +1,1 @@
+Multiple are Sensors just plugged in parallel 
