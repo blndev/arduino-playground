@@ -1,6 +1,9 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+//#include <OneWire.h> // OneWire by Jim Studt (without 31850)
+//#include <DallasTemperature.h> //DallasTemp (not from Adafruit - without MAX31850)
+
 
 // Data wire is plugged into pin 2 on the Arduino 
 #define ONE_WIRE_BUS 2 
