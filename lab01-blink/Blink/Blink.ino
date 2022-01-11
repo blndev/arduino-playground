@@ -27,7 +27,7 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  for (int i = 3; i <= 3; i++)
+  for (int i = 0; i <= 3; i++)
   {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(150);                       // wait for a second
